@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "mothers")
@@ -34,7 +35,7 @@ public class MotherJpaEntity {
     }
 
     public MotherJpaEntity(
-            Long id,
+            UUID id,
             String firstName,
             String lastName,
             String phoneNumber,
@@ -47,7 +48,7 @@ public class MotherJpaEntity {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 

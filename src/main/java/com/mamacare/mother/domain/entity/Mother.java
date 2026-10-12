@@ -1,56 +1,76 @@
-
 package com.mamacare.mother.domain.entity;
 
 import com.mamacare.mother.domain.valueobject.MotherId;
 import com.mamacare.mother.domain.valueobject.PhoneNumber;
 import com.mamacare.mother.domain.valueobject.DateOfBirth;
 
+import lombok.Getter;
+
+@Getter
 public class Mother {
 
-    private MotherId id;
+    private final MotherId id;
     private String firstName;
     private String lastName;
     private PhoneNumber phoneNumber;
     private DateOfBirth dateOfBirth;
 
-    // Constructor for a new Mother (no database ID yet)
-    public Mother(
+    // Private constructor
+    private Mother(
+            MotherId id,
             String firstName,
             String lastName,
             PhoneNumber phoneNumber,
             DateOfBirth dateOfBirth
     ) {
-        if (firstName == null || firstName.isBlank()) {
-            throw new IllegalArgumentException(
-                    "First name cannot be blank"
-            );
-        }
-
-        if (lastName == null || lastName.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Last name cannot be blank"
-            );
-        }
-
-        if (phoneNumber == null) {
-            throw new IllegalArgumentException(
-                    "Phone number cannot be null"
-            );
-        }
-
-        if (dateOfBirth == null) {
-            throw new IllegalArgumentException(
-                    "Date of birth cannot be null"
-            );
-        }
-
-        this.firstName = firstName.trim();
-        this.lastName = lastName.trim();
-        this.phoneNumber = phoneNumber;
-        this.dateOfBirth = dateOfBirth;
+        this.id = id;
+        this.firstName = validName(firstName, "First name");
+        this.lastName = validName(lastName, "Last name");
+        this.phoneNumber = required(phoneNumber, "Phone number");
+        this.dateOfBirth = required(dateOfBirth, "Date of birth");
     }
 
-    // Reconstruct an existing Mother from persistence
+    // Validate names
+    private static String validName(String name, String label) {
+
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException(
+                    label + " cannot be blank"
+            );
+        }
+
+        return name.trim();
+    }
+
+    // Validate required values
+    private static <T> T required(T value, String label) {
+
+        if (value == null) {
+            throw new IllegalArgumentException(
+                    label + " is required"
+            );
+        }
+
+        return value;
+    }
+
+    // Register a new mother
+    public static Mother register(
+            String firstName,
+            String lastName,
+            PhoneNumber phoneNumber,
+            DateOfBirth dateOfBirth
+    ) {
+        return new Mother(
+                null,
+                firstName,
+                lastName,
+                phoneNumber,
+                dateOfBirth
+        );
+    }
+
+    // Reconstruct an existing mother
     public static Mother reconstitute(
             MotherId id,
             String firstName,
@@ -58,90 +78,41 @@ public class Mother {
             PhoneNumber phoneNumber,
             DateOfBirth dateOfBirth
     ) {
-        if (id == null) {
-            throw new IllegalArgumentException(
-                    "Mother ID cannot be null when reconstituting"
-            );
-        }
-
-        Mother mother = new Mother(
+        return new Mother(
+                required(id, "Mother ID"),
                 firstName,
                 lastName,
                 phoneNumber,
                 dateOfBirth
         );
-
-        mother.id = id;
-
-        return mother;
     }
 
-    // Assign a database-generated ID once
-    public void assignId(MotherId id) {
-        if (id == null) {
-            throw new IllegalArgumentException(
-                    "Mother ID cannot be null"
-            );
-        }
+    // Update mother's name
+    public void updateName(String firstName, String lastName) {
 
-        if (this.id != null) {
-            throw new IllegalStateException(
-                    "Mother ID has already been assigned"
-            );
-        }
+        String validFirst = validName(firstName, "First name");
+        String validLast = validName(lastName, "Last name");
 
-        this.id = id;
+        this.firstName = validFirst;
+        this.lastName = validLast;
     }
 
-    // Controlled updates
-    public void updateFirstName(String firstName) {
-        if (firstName == null || firstName.isBlank()) {
-            throw new IllegalArgumentException(
-                    "First name cannot be blank"
-            );
-        }
-
-        this.firstName = firstName.trim();
-    }
-
-    public void updateLastName(String lastName) {
-        if (lastName == null || lastName.isBlank()) {
-            throw new IllegalArgumentException(
-                    "Last name cannot be blank"
-            );
-        }
-
-        this.lastName = lastName.trim();
-    }
-
+    // Update mother's phone number
     public void updatePhoneNumber(PhoneNumber phoneNumber) {
-        if (phoneNumber == null) {
-            throw new IllegalArgumentException(
-                    "Phone number cannot be null"
-            );
-        }
 
-        this.phoneNumber = phoneNumber;
+        this.phoneNumber = required(
+                phoneNumber,
+                "Phone number"
+        );
     }
 
-    // Read-only access to fields
-    public MotherId getId() {
-        return id;
-    }
+    // Correct date of birth
+    public void correctDateOfBirth(DateOfBirth dateOfBirth) {
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public PhoneNumber getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public DateOfBirth getDateOfBirth() {
-        return dateOfBirth;
+        this.dateOfBirth = required(
+                dateOfBirth,
+                "Date of birth"
+        );
     }
 }
+

@@ -1,12 +1,13 @@
-
 package com.mamacare.mother.domain.valueobject;
 
-public record MotherId(Long value) {
+import java.util.UUID;
+
+public record MotherId(UUID value) {
 
     public MotherId {
-        if (value == null || value <= 0) {
+        if (value == null) {
             throw new IllegalArgumentException(
-                    "Mother ID must be a positive number"
+                    "Mother ID cannot be null"
             );
         }
     }

@@ -1,25 +1,23 @@
-
 package com.mamacare.mother.infrastructure.adapter.in.web;
 
-import com.mamacare.mother.application.dto.CreateMotherRequest;
+import com.mamacare.mother.application.dto.CorrectDateOfBirthRequest;
 import com.mamacare.mother.application.dto.MotherResponse;
+import com.mamacare.mother.application.dto.RegisterMotherRequest;
+import com.mamacare.mother.application.dto.UpdateMotherNameRequest;
+import com.mamacare.mother.application.dto.UpdatePhoneNumberRequest;
 import com.mamacare.mother.application.service.MotherService;
-
-import com.mamacare.mother.domain.entity.Mother;
 import com.mamacare.mother.domain.valueobject.MotherId;
-import com.mamacare.mother.domain.valueobject.PhoneNumber;
-import com.mamacare.mother.domain.valueobject.DateOfBirth;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,48 +31,52 @@ public class MotherController {
         this.motherService = motherService;
     }
 
-    // Register a new mother
     @PostMapping
-    public ResponseEntity<MotherResponse> registerMother(
-            @RequestBody CreateMotherRequest request
-    ) {
+    public ResponseEntity<MotherResponse> register(
+            @RequestBody RegisterMotherRequest request) {
 
-        Mother mother = Mother.register(
-                request.firstName(),
-                request.lastName(),
-                new PhoneNumber(request.phoneNumber()),
-                new DateOfBirth(request.dateOfBirth())
-        );
+        MotherResponse created = motherService.registerMother(request);
 
-        Mother savedMother = motherService.registerMother(mother);
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(created.id())
+                .toUri();
 
-        MotherResponse response = MotherResponse.from(savedMother);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        return ResponseEntity.created(location).body(created);
     }
 
-    // Retrieve all mothers
-    @GetMapping
-    public List<MotherResponse> getAllMothers() {
-
-        return motherService.getAllMothers()
-                .stream()
-                .map(MotherResponse::from)
-                .toList();
-    }
-
-    // Retrieve one mother by ID
     @GetMapping("/{id}")
-    public MotherResponse getMotherById(
-            @PathVariable UUID id
-    ) {
+    public ResponseEntity<MotherResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(motherService.getMotherById(new MotherId(id)));
+    }
 
-        MotherId motherId = new MotherId(id);
+    @GetMapping
+    public ResponseEntity<List<MotherResponse>> getAll() {
+        return ResponseEntity.ok(motherService.getAllMothers());
+    }
 
-        Mother mother = motherService.getMother(motherId);
+    @PutMapping("/{id}/name")
+    public ResponseEntity<MotherResponse> updateName(
+            @PathVariable UUID id,
+            @RequestBody UpdateMotherNameRequest request) {
 
-        return MotherResponse.from(mother);
+        return ResponseEntity.ok(motherService.updateName(new MotherId(id), request));
+    }
+
+    @PutMapping("/{id}/phone-number")
+    public ResponseEntity<MotherResponse> updatePhoneNumber(
+            @PathVariable UUID id,
+            @RequestBody UpdatePhoneNumberRequest request) {
+
+        return ResponseEntity.ok(motherService.updatePhoneNumber(new MotherId(id), request));
+    }
+
+    @PutMapping("/{id}/date-of-birth")
+    public ResponseEntity<MotherResponse> correctDateOfBirth(
+            @PathVariable UUID id,
+            @RequestBody CorrectDateOfBirthRequest request) {
+
+        return ResponseEntity.ok(motherService.correctDateOfBirth(new MotherId(id), request));
     }
 }

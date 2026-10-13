@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Past;
 
 import java.time.LocalDate;
 
-public record CreateMotherRequest(
+public record RegisterMotherRequest(
 
         @NotBlank(message = "First name is required")
         String firstName,
